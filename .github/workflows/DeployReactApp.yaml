@@ -1,75 +1,70 @@
-name: Deploy React to github pages
+name: Deploy React to GitHub Pages
+
 on:
   push:
     branches:
       - main
       - 'feature/**'
     paths-ignore:
-      - './github/workflows/*'
-      - RADME.md
+      - '.github/workflows/*'
+      - README.md
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Get Code
-              uses: actions/checkout@v6
-            - name: Install Node 20
-              uses: actions/setup-node@v6
-              with:
-                node-version: 20
-            - name: Cache Dependencies
-              uses: actions/cache@v4 
-              with:
-                path: ~/.npm
-                key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-            - name: Install Dependencies
-              run: npm ci
-            - name: Run Tests
-              run: npm run test
-    build:
-        needs: test
-        runs-on: ubuntu-latest
-        steps:
-            - name: Get Code
-              uses: actions/checkout@v6
-            - name: Install Node 20
-              uses: actions/setup-node@v6
-              with:
-                node-version: 20
-            - name: Cache Dependencies
-              uses: actions/cache@v4 
-              with:
-                path: ~/.npm
-                key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-            - name: Install Dependencies
-              run: npm ci
-            - name: Build Project
-              run: npm run build
-            - name: Upload Dist Artifact
-              uses: upload-pages-artifact@v3
-              with:
-                name: github-pages
-                path: dist
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-    deploy:
-        needs: build
-        runs-on: ubuntu-latest
+      - name: Install dependencies
+        run: npm ci
 
-        permissions:
-          pages: write      
-          id-token: write
+      - name: Run tests
+        run: npm run test
 
-        environment:
-          name: github-pages
-          url: ${{ steps.deployment.outputs.page_url }}
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        steps:
-          - name: Deploy to GitHub Pages
-            id: deployment
-            uses: actions/deploy-pages@v4 
-            with:
-                token: ${{secrets.GITHUB_TOKEN}}
-    
-              
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
