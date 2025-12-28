@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://github.com/Falcodz/react-cicd-actions",
+  "homepage": "https://Falcodz.github.io/react-cicd-actions",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
